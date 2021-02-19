@@ -1,8 +1,5 @@
 import java.io.FileInputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -28,16 +25,15 @@ public class Repository {
                 properties.getProperty("name"),
                 properties.getProperty("password"));
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT password, first_name FROM customers");)
-             {
-                 while (resultSet.next()) {
-                     if (resultSet.getString("first_name").equalsIgnoreCase(username) &&
-                             resultSet.getString("password").equalsIgnoreCase(password)) {
-                         System.out.println("Välkommen till skoaffären " + username);
-                         return true;
-                     }
-                 }
-             } catch (Exception e) {
+             ResultSet resultSet = statement.executeQuery("SELECT password, first_name FROM customers");) {
+            while (resultSet.next()) {
+                if (resultSet.getString("first_name").equalsIgnoreCase(username) &&
+                        resultSet.getString("password").equalsIgnoreCase(password)) {
+                    System.out.println("Välkommen till skoaffären " + username);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
@@ -53,12 +49,12 @@ public class Repository {
         String password = scanner.nextLine().trim();
 
         if (checkLogin(username, password)) {
+            rateShoe();
             getAllShoes();
             System.out.println("\n\nVälj Sko nummer:");
             int choice = scanner.nextInt();
             chooseShoe(choice);
-        }
-        else System.out.println("Uppgifterna finns inte i systemet");
+        } else System.out.println("Uppgifterna finns inte i systemet");
     }
 
     public List<Shoes> getAllShoes() {
@@ -67,8 +63,7 @@ public class Repository {
                 properties.getProperty("name"),
                 properties.getProperty("password"));
              Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM shoes JOIN prices ON price_id = prices.id JOIN sizes ON size_id = sizes.id JOIN brands ON brand_id = brands.id");)
-        {
+             ResultSet resultSet = statement.executeQuery("SELECT * FROM shoes JOIN prices ON price_id = prices.id JOIN sizes ON size_id = sizes.id JOIN brands ON brand_id = brands.id");) {
             while (resultSet.next()) {
                 int shoeID = resultSet.getInt("shoes.id");
                 Prices price = new Prices(resultSet.getInt("shoes.price_id"), resultSet.getInt("prices.price"));
@@ -80,7 +75,6 @@ public class Repository {
             }
 
             for (Shoes s : shoeList) {
-
                 System.out.println(counter + ". " + s.getBrand().getBrandName() + ", " + s.getShoeName() + ", " + s.getPriceID().getPriceNumber() + "kr, storlek: " + s.getSizeID().getSizeNumber());
                 counter++;
             }
@@ -92,7 +86,7 @@ public class Repository {
 
     public Shoes chooseShoe(int choice) {
         for (int i = 1; i < shoeList.size(); i++) {
-            if (i == choice){
+            if (i == choice) {
                 return shoeList.get(i - 1);
             }
         }
@@ -101,5 +95,21 @@ public class Repository {
 
     public void addShoeToOrder() {
 
+    }
+
+    public void rateShoe() {
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
+                properties.getProperty("name"),
+                properties.getProperty("password"));)
+             {
+                 CallableStatement statement = connection.prepareCall("CALL rate(?,?,?,?)");
+                 statement.setInt(1,1);
+                 statement.setInt(2,308);
+                 statement.setInt(3,2);
+                 statement.setString(4,"bestish!");
+                 statement.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
