@@ -1,3 +1,4 @@
+import javax.xml.transform.Result;
 import java.io.FileInputStream;
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class Repository {
     private Orders orders;
     private int customerID;
     private int orderID;
+    private Connection connection;
 
     public Repository() {
         try {
@@ -93,12 +95,13 @@ public class Repository {
                 properties.getProperty("password"));
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery( "SELECT * from orders WHERE orders.customer_id = '"+customerID +"'")){
-
+            // Nånting med selecten och loopen ställer till problem
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 orders = new Orders(id, customers);
                 return orders;
             }
+
 
 
         } catch (Exception e) {
@@ -109,22 +112,34 @@ public class Repository {
     }
 
     public void addShoeToOrder(int customerID, int orderID , int shoeID, int quantity) {
+
        try(Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
                properties.getProperty("name"),
                properties.getProperty("password"));
                 CallableStatement callableStatement = connection.prepareCall("CALL add_to_cart (?, ?, ?, ?)")){
 
+           connection.setAutoCommit(false);
            callableStatement.setInt(1, customerID);
            callableStatement.setInt(2,orderID );
            callableStatement.setInt(3, shoeID);
            callableStatement.setInt(4, quantity);
-
            callableStatement.execute();
 
+           connection.commit();
+
+
+           connection.setAutoCommit(true);
 
 
        } catch (Exception e) {
            e.printStackTrace();
+           try {
+               System.out.println("Transaction is being rolled back");
+               connection.rollback();
+           } catch (SQLException throwables) {
+               throwables.getMessage();
+           }
+
        }
     }
 
