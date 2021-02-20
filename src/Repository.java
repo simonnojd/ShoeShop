@@ -20,7 +20,6 @@ public class Repository {
         try {
             properties.load(new FileInputStream("src/Properties.properties"));
             Class.forName("com.mysql.cj.jdbc.Driver");
-            addShoeToOrder();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,7 +68,7 @@ public class Repository {
                     System.out.println("Customer id: " + customerID);
                      orderID = getOrder(getCustomer(username)).getOrderID();
                     System.out.println("Order id " + orderID);
-                    //addShoeToOrder(customerID, orderID, shoeID, amountOfShoes);
+                    addShoeToOrder(customerID, orderID, shoeID, amountOfShoes);
                     break;
 
                 case 2: {
@@ -109,16 +108,16 @@ public class Repository {
         return null;
     }
 
-    public void addShoeToOrder() {
+    public void addShoeToOrder(int customerID, int orderID , int shoeID, int quantity) {
        try(Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
                properties.getProperty("name"),
                properties.getProperty("password"));
                 CallableStatement callableStatement = connection.prepareCall("CALL add_to_cart (?, ?, ?, ?)")){
 
-           callableStatement.setInt(1, 2);
-           callableStatement.setInt(2,1001 );
-           callableStatement.setInt(3, 302);
-           callableStatement.setInt(4, 10);
+           callableStatement.setInt(1, customerID);
+           callableStatement.setInt(2,orderID );
+           callableStatement.setInt(3, shoeID);
+           callableStatement.setInt(4, quantity);
 
            callableStatement.execute();
 
