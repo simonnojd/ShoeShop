@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 public class Repository {
 
-    private List<Shoes> shoeList = new ArrayList<>();
     private Properties properties = new Properties();
     private int counter = 1;
     private Customers customers;
@@ -47,6 +46,7 @@ public class Repository {
     }
 
     public void promptUser() {
+
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Skriv användarnamn:");
@@ -54,54 +54,65 @@ public class Repository {
 
         System.out.println("Skriv lösenord:");
         String password = scanner.nextLine().trim();
+        while(true) {
+            if (checkLogin(username, password)) {
+                getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
+                        + ", " + s.getShoeName() + ", Färg: " +  s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
+                        "kr, storlek: " + s.getSizeID().getSizeNumber()));
+                System.out.println("\n\nVälj Sko nummer:");
+                int choice = scanner.nextInt();
+                int shoeID = chooseShoe(choice).getShoeID();
+                System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
+                System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon");
+                switch (scanner.nextInt()) {
+                    case 1:
+                        System.out.println("Hur många exemplar vill du beställa?");
+                        int amountOfShoes = scanner.nextInt();
+                        customerID = getCustomer(username).getCustomerID();
+                        System.out.println(addShoeToOrder(customerID, shoeID, amountOfShoes));
+                        break;
 
-        if (checkLogin(username, password)) {
-            getAllShoes();
-            System.out.println("\n\nVälj Sko nummer:");
-            int choice = scanner.nextInt();
-            int shoeID = chooseShoe(choice).getShoeID();
-            System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
-            System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon");
-            switch (scanner.nextInt()){
-                case 1:
-                    System.out.println("Hur många exemplar vill du beställa?");
-                    int amountOfShoes = scanner.nextInt();
-                     customerID = getCustomer(username).getCustomerID();
-                    System.out.println("Customer id: " + customerID);
-                     orderID = getOrder(getCustomer(username)).getOrderID();
-                    System.out.println("Order id " + orderID);
-                    addShoeToOrder(customerID, orderID, shoeID, amountOfShoes);
-                    break;
+                    case 2: {
+                        System.out.println("Sätt en kommentar på skon");
+                        scanner.nextLine();
+                        String comment = scanner.nextLine().trim();
+                        System.out.println("Betygsätt skon mellan 1-4");
+                        int grade = scanner.nextInt();
+                        rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
+                        break;
 
-                case 2: {
-                    System.out.println("Sätt en kommentar på skon");
-                    scanner.nextLine();
-                    String comment = scanner.nextLine().trim();
-                    System.out.println("Betygsätt skon mellan 1-4");
-                    int grade = scanner.nextInt();
-                    rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
-                    break;
-
+                    }
                 }
-            }
 
-        } else System.out.println("Uppgifterna finns inte i systemet");
+                System.out.println("Vill du lägga till en till sko?");
+                scanner.nextLine();
+                if (scanner.nextLine().equalsIgnoreCase("Nej")){
+                    break;
+                }
+
+
+
+            } else System.out.println("Uppgifterna finns inte i systemet");
+        }
+    }
+
+    public Connection addConnection() throws SQLException {
+        return DriverManager.getConnection(properties.getProperty("connectionString"),
+                properties.getProperty("name"),
+                properties.getProperty("password"));
     }
 
     public Orders getOrder(Customers customers){
         int customerID = customers.getCustomerID();
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
-                properties.getProperty("name"),
-                properties.getProperty("password"));
+        try (Connection connection = addConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery( "SELECT * from orders WHERE orders.customer_id = '"+customerID +"'")){
-            // Nånting med selecten och loopen ställer till problem
+
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 orders = new Orders(id, customers);
                 return orders;
             }
-
 
 
         } catch (Exception e) {
@@ -111,25 +122,24 @@ public class Repository {
         return null;
     }
 
-    public void addShoeToOrder(int customerID, int orderID , int shoeID, int quantity) {
+    public String addShoeToOrder(int customerID, int shoeID, int quantity) {
 
-       try(Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
-               properties.getProperty("name"),
-               properties.getProperty("password"));
-                CallableStatement callableStatement = connection.prepareCall("CALL add_to_cart (?, ?, ?, ?)")){
+       try(Connection connection = addConnection();
+               CallableStatement callableStatement = connection.prepareCall("CALL add_to_cart (?, ?, ?, ?)")){
 
-           connection.setAutoCommit(false);
            callableStatement.setInt(1, customerID);
-           callableStatement.setInt(2,orderID );
+           callableStatement.setInt(2, orderID );
            callableStatement.setInt(3, shoeID);
            callableStatement.setInt(4, quantity);
+           callableStatement.registerOutParameter(2, Types.INTEGER);
            callableStatement.execute();
 
-           connection.commit();
+           if (orderID == 0){
+               orderID = callableStatement.getInt(2);
+           }
+           System.out.println(orderID);
 
-
-           connection.setAutoCommit(true);
-
+         return "Skon är tillagd";
 
        } catch (Exception e) {
            e.printStackTrace();
@@ -141,13 +151,13 @@ public class Repository {
            }
 
        }
+
+       return "Detta gick inte så bra";
     }
 
 
     public Customers getCustomer(String userName) {
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
-                properties.getProperty("name"),
-                properties.getProperty("password"));
+        try (Connection connection = addConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery( "SELECT * from customers JOIN locations ON location_id = locations.id WHERE first_name ='"+userName + "'")){
 
@@ -171,10 +181,10 @@ public class Repository {
 
 
     public List<Shoes> getAllShoes() {
+        List<Shoes> shoeList = new ArrayList<>();
+        counter = 1;
 
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
-                properties.getProperty("name"),
-                properties.getProperty("password"));
+        try (Connection connection = addConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT * FROM shoes JOIN prices ON price_id = prices.id JOIN sizes ON size_id = sizes.id JOIN brands ON brand_id = brands.id");) {
             while (resultSet.next()) {
@@ -187,17 +197,17 @@ public class Repository {
                 shoeList.add(new Shoes(shoeID, price, size, brand, shoeName));
             }
 
-            for (Shoes s : shoeList) {
-                System.out.println(counter + ". " + s.getBrand().getBrandName() + ", " + s.getShoeName() + ", " + s.getPriceID().getPriceNumber() + "kr, storlek: " + s.getSizeID().getSizeNumber());
-                counter++;
-            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        giveShoesColor(shoeList);
+        giveShoesCategory(shoeList);
         return shoeList;
     }
 
     public Shoes chooseShoe(int choice) {
+        List<Shoes> shoeList =  getAllShoes();
         for (int i = 1; i < shoeList.size() +1; i++) {
             if (i == choice) {
                 return shoeList.get(i - 1);
@@ -206,13 +216,49 @@ public class Repository {
         return null;
     }
 
+    public void giveShoesColor(List<Shoes> shoeList){
+        try (Connection connection = addConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM shoe_has_color JOIN colors ON colors.id = shoe_has_color.color_id");
+            ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            while (resultSet.next()){
+                int shoeID = resultSet.getInt("shoe_id");
+                for (Shoes s: shoeList) {
+                    if (s.getShoeID() == shoeID){
+                        s.addToColorList(new Colors(resultSet.getInt("shoe_has_color.color_id"), resultSet.getString("colors.color_name")));
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void giveShoesCategory(List<Shoes> shoeList){
+        try (Connection connection = addConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM shoes_in_categories JOIN categories ON categories.id = shoes_in_categories.category_id");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            while (resultSet.next()){
+                int shoeID = resultSet.getInt("shoe_id");
+                for (Shoes s: shoeList) {
+                    if (s.getShoeID() == shoeID){
+                        s.addToCategoryList(new Categories(resultSet.getInt("shoes_in_categories.category_id"), resultSet.getString("categories.name")));
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     public void rateShoe(int customerID, int shoeID, int grade, String comment) {
 
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("connectionString"),
-                properties.getProperty("name"),
-                properties.getProperty("password"));) {
+        try (Connection connection = addConnection()) {
             while (true) {
                 CallableStatement statement = connection.prepareCall("CALL rate(?,?,?,?)");
                 statement.setInt(1, customerID);
@@ -232,4 +278,6 @@ public class Repository {
             e.printStackTrace();
         }
     }
+
+
 }

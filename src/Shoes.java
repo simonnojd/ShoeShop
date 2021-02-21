@@ -1,9 +1,14 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Shoes {
     private int shoeID;
     private Prices price;
     private Sizes size;
     private Brands brand;
     private String shoeName;
+    private List<Colors> colorsList = new ArrayList<>();
+    private List<Categories> categoriesList = new ArrayList<>();
 
     public Shoes(int shoeID, Prices price, Sizes size, Brands brand, String shoeName) {
         this.shoeID = shoeID;
@@ -11,6 +16,22 @@ public class Shoes {
         this.size = size;
         this.brand = brand;
         this.shoeName = shoeName;
+    }
+
+    public void addToColorList(Colors color){
+        colorsList.add(color);
+    }
+
+    public void addToCategoryList(Categories category){
+        categoriesList.add(category);
+    }
+
+    public List<Colors> getColorsList() {
+        return colorsList;
+    }
+
+    public List<Categories> getCategoriesList() {
+        return categoriesList;
     }
 
     public int getShoeID() { return shoeID; }
@@ -51,14 +72,14 @@ public class Shoes {
         this.shoeName = shoeName;
     }
 
-
-    public String toString1() {
-        return "Shoes{" +
-                "shoeID=" + shoeID +
-                ", price=" + price +
-                ", size=" + size +
-                ", brand=" + brand +
-                ", shoeName='" + shoeName + '\'' +
-                '}';
+    @Override
+    public String toString() {
+        return "Shoes: " +
+                "\nprice: " + price +
+                "\nsize: " + size +
+                "\nbrand: " + brand +
+                "\nshoeName: " + shoeName +
+                "\ncolorsList: " + colorsList +
+                "\ncategoriesList: " + categoriesList;
     }
 }
