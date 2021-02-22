@@ -9,6 +9,7 @@ public class Shoes {
     private String shoeName;
     private List<Colors> colorsList = new ArrayList<>();
     private List<Categories> categoriesList = new ArrayList<>();
+    private List<Reviews> reviewsList = new ArrayList<>();
 
     public Shoes(int shoeID, Prices price, Sizes size, Brands brand, String shoeName) {
         this.shoeID = shoeID;
@@ -26,12 +27,18 @@ public class Shoes {
         categoriesList.add(category);
     }
 
+    public void addToReviewsList(Reviews reviews) { reviewsList.add(reviews);}
+
     public List<Colors> getColorsList() {
         return colorsList;
     }
 
     public List<Categories> getCategoriesList() {
         return categoriesList;
+    }
+
+    public List<Reviews> getReviewsList() {
+        return reviewsList;
     }
 
     public int getShoeID() { return shoeID; }

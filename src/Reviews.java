@@ -20,7 +20,6 @@ public class Reviews {
         this.comment = comment;
     }
 
-
     public int getReviewID() {
         return reviewID;
     }
