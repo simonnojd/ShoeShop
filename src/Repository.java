@@ -1,4 +1,3 @@
-import javax.xml.transform.Result;
 import java.io.FileInputStream;
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,10 +12,15 @@ public class Repository {
     private Customers customers;
     private Locations locations;
     private Orders orders;
+    private OrderInfo orderInfo;
     private int customerID;
     private int orderID;
     private Connection connection;
     private Shoes shoe;
+    private List<OrderInfo> orderInfoList = new ArrayList<>();
+    private int id = 0;
+    int quantity = 0;
+    private List<Shoes> shoeList = new ArrayList<>();
 
     public Repository() {
         try {
@@ -55,53 +59,51 @@ public class Repository {
         String password = scanner.nextLine().trim();
         while (true) {
             if (checkLogin(username, password)) {
+                getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
+                        + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
+                        "kr, storlek: " + s.getSizeID().getSizeNumber()));
+                System.out.println("\n\nVälj Sko nummer:");
+                int choice = scanner.nextInt();
+                int shoeID = chooseShoe(choice).getShoeID();
+                System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
+                System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon, välj 3 om du vill se genomsnittsbetyget på skon och dess kommentarer");
                 switch (scanner.nextInt()) {
                     case 1:
-                        getOrder(username);
+                        System.out.println("Hur många exemplar vill du beställa?");
+                        int amountOfShoes = scanner.nextInt();
+                        customerID = getCustomer(username).getCustomerID();
+                        System.out.println(addShoeToOrder(customerID, shoeID, amountOfShoes));
+                        getOrderInfo(username);
                         break;
+
                     case 2: {
-                        getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
-                                + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
-                                "kr, storlek: " + s.getSizeID().getSizeNumber()));
-                        System.out.println("\n\nVälj Sko nummer:");
-                        int choice = scanner.nextInt();
-                        int shoeID = chooseShoe(choice).getShoeID();
-                        System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
-                        System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon, välj 3 om du vill se genomsnittsbetyget på skon och dess kommentarer");
-                        switch (scanner.nextInt()) {
-                            case 1:
-                                System.out.println("Hur många exemplar vill du beställa?");
-                                int amountOfShoes = scanner.nextInt();
-                                customerID = getCustomer(username).getCustomerID();
-                                System.out.println(addShoeToOrder(customerID, shoeID, amountOfShoes));
-                                break;
-
-                            case 2: {
-                                System.out.println("Sätt en kommentar på skon");
-                                scanner.nextLine();
-                                String comment = scanner.nextLine().trim();
-                                System.out.println("Betygsätt skon mellan 1-4");
-                                int grade = scanner.nextInt();
-                                rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
-                                break;
-
-                            }
-
-                            case 3: {
-                                averageRatingOnShoe(shoeID);
-                                getCommentsFromReviews(chooseShoe(choice));
-                                break;
-                            }
-                        }
-
-                        System.out.println("Vill du lägga till en till sko?");
+                        System.out.println("Sätt en kommentar på skon");
                         scanner.nextLine();
-                        if (scanner.nextLine().equalsIgnoreCase("Nej")) {
-                            break;
-                        }
+                        String comment = scanner.nextLine().trim();
+                        System.out.println("Betygsätt skon mellan 1-4");
+                        int grade = scanner.nextInt();
+                        rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
+                        break;
+
+                    }
+
+                    case 3: {
+                        averageRatingOnShoe(shoeID);
+                        getCommentsFromReviews(chooseShoe(choice));
                         break;
                     }
                 }
+
+                System.out.println("Vill du lägga till en till sko?");
+                scanner.nextLine();
+                if (scanner.nextLine().equalsIgnoreCase("Nej")) {
+                    break;
+                }
+                else {
+                    printOrderList();
+                }
+
+
             } else System.out.println("Uppgifterna finns inte i systemet");
         }
     }
@@ -112,23 +114,60 @@ public class Repository {
                 properties.getProperty("password"));
     }
 
-    public void getOrder(String customerName) {
+    public void getOrderInfo(String customerName) {
+
+        int orderInfoID = 0;
+
         int customerID = getCustomer(customerName).getCustomerID();
         try (Connection connection = addConnection();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT * from orders JOIN order_info on orders.id = order_info.order_id WHERE orders.customer_id = '" + customerID + "'")) {
 
             while (resultSet.next()) {
-                int id = resultSet.getInt("id");
+                orderInfoID = resultSet.getInt("order_info.id");
+                quantity = resultSet.getInt("order_info.quantity");
+                Date date = resultSet.getDate("order_date");
+                int shoeID = resultSet.getInt("shoe_id");
+                Shoes shoe = findShoeByID(shoeID);
+                int id = resultSet.getInt("orders.id");
                 orders = new Orders(id, customers);
-                getCustomer(customerName).addOrderList(orders);
-            }
-            System.out.println(getCustomer(customerName).getOrdersList());
+                orderInfo = new OrderInfo(orderInfoID, orders, quantity, shoe, date);
+                orderInfoList.add(orderInfo);
 
+
+                //System.out.println("OrderInfoID: " + orderInfoID + " Quantity: " + quantity + " Sko: " + shoe.getShoeName());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public Orders getOrder(String customerName) {
+        int customerID = getCustomer(customerName).getCustomerID();
+        try (Connection connection = addConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT * from orders WHERE orders.customer_id = '" + customerID + "'")) {
+
+            while (resultSet.next()) {
+                id = resultSet.getInt("orders.id");
+                orders = new Orders(id, customers);
+            }
+            return orders;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void printOrderList() {
+        for (OrderInfo oi : orderInfoList) {
+            if (oi.getOrder().getOrderID() == orderID) {
+
+                System.out.println("Skonamn: " + oi.getShoe().getShoeName() + ", Kvantitet: " + oi.getQuantity());
+            }
+        }
+    }
+
 
     public String addShoeToOrder(int customerID, int shoeID, int quantity) {
 
@@ -217,6 +256,16 @@ public class Repository {
         for (int i = 1; i < shoeList.size() + 1; i++) {
             if (i == choice) {
                 return shoeList.get(i - 1);
+            }
+        }
+        return null;
+    }
+
+    public Shoes findShoeByID(int shoeID) {
+        List<Shoes> shoeList = getAllShoes();
+        for (Shoes s : shoeList) {
+            if (s.getShoeID() == shoeID){
+                return s;
             }
         }
         return null;

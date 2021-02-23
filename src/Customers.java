@@ -1,13 +1,9 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class Customers {
     private int customerID;
     private String firstName;
     private String lastName;
     private Locations location;
     private String password;
-    private List<Orders> ordersList = new ArrayList<>();
 
     public Customers(int customerID, String firstName, String lastName, Locations location, String password) {
         this.customerID = customerID;
@@ -15,20 +11,6 @@ public class Customers {
         this.lastName = lastName;
         this.location = location;
         this.password = password;
-    }
-
-    public List<Orders> getOrdersList() {
-        return ordersList;
-    }
-
-    public void addOrderList(Orders o) {
-        ordersList.add(o);
-    }
-
-    public void printOrderList() {
-        for (Orders o : ordersList) {
-            System.out.println(o.getOrderID());
-        }
     }
 
     public int getCustomerID() {
