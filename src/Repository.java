@@ -48,7 +48,7 @@ public class Repository {
 
     public void promptUser() {
         int choice = 0;
-
+        int shoeID = 0;
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Skriv användarnamn:");
@@ -56,20 +56,23 @@ public class Repository {
 
         System.out.println("Skriv lösenord:");
         String password = scanner.nextLine().trim();
+
         while (true) {
             if (checkLogin(username, password)) {
                 getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
                         + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
                         "kr, storlek: " + s.getSizeID().getSizeNumber()));
+
                 System.out.println("\n\nVälj Sko nummer:");
 
                 try {
                     choice = scanner.nextInt();
-                } catch (InputMismatchException e){
+                    shoeID = chooseShoe(choice).getShoeID();
+                } catch (Exception e){
                     System.out.println("Måste vara en siffra");
                 }
 
-                int shoeID = chooseShoe(choice).getShoeID();
+
                 System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon, välj 3 om du vill se genomsnittsbetyget på skon och dess kommentarer");
                 try {
                     switch (scanner.nextInt()) {
