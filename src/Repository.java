@@ -1,9 +1,7 @@
 import java.io.FileInputStream;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
+import java.sql.Date;
+import java.util.*;
 
 public class Repository {
 
@@ -49,6 +47,7 @@ public class Repository {
     }
 
     public void promptUser() {
+        int choice = 0;
 
         Scanner scanner = new Scanner(System.in);
 
@@ -63,34 +62,43 @@ public class Repository {
                         + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
                         "kr, storlek: " + s.getSizeID().getSizeNumber()));
                 System.out.println("\n\nVälj Sko nummer:");
-                int choice = scanner.nextInt();
+
+                try {
+                    choice = scanner.nextInt();
+                } catch (InputMismatchException e){
+                    System.out.println("Måste vara en siffra");
+                }
+
                 int shoeID = chooseShoe(choice).getShoeID();
-                //System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
                 System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon, välj 3 om du vill se genomsnittsbetyget på skon och dess kommentarer");
-                switch (scanner.nextInt()) {
-                    case 1:
-                        System.out.println("Hur många exemplar vill du beställa?");
-                        int amountOfShoes = scanner.nextInt();
-                        customerID = getCustomer(username).getCustomerID();
-                        addShoeToOrder(customerID, shoeID, amountOfShoes);
-                        break;
+                try {
+                    switch (scanner.nextInt()) {
+                        case 1:
+                            System.out.println("Hur många exemplar vill du beställa?");
+                            int amountOfShoes = scanner.nextInt();
+                            customerID = getCustomer(username).getCustomerID();
+                            addShoeToOrder(customerID, shoeID, amountOfShoes);
+                            break;
 
-                    case 2: {
-                        System.out.println("Sätt en kommentar på skon");
-                        scanner.nextLine();
-                        String comment = scanner.nextLine().trim();
-                        System.out.println("Betygsätt skon mellan 1-4");
-                        int grade = scanner.nextInt();
-                        rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
-                        break;
+                        case 2: {
+                            System.out.println("Sätt en kommentar på skon");
+                            scanner.nextLine();
+                            String comment = scanner.nextLine().trim();
+                            System.out.println("Betygsätt skon mellan 1-4");
+                            int grade = scanner.nextInt();
+                            rateShoe(getCustomer(username).getCustomerID(), shoeID, grade, comment);
+                            break;
 
+                        }
+
+                        case 3: {
+                            averageRatingOnShoe(shoeID);
+                            getCommentsFromReviews(chooseShoe(choice));
+                            break;
+                        }
                     }
-
-                    case 3: {
-                        averageRatingOnShoe(shoeID);
-                        getCommentsFromReviews(chooseShoe(choice));
-                        break;
-                    }
+                } catch (Exception e){
+                    System.out.println("Något gick fel");
                 }
 
                 System.out.println("Vill du lägga till en till sko?");
@@ -132,7 +140,7 @@ public class Repository {
                 orderInfo = new OrderInfo(orderInfoID, orders, quantity, shoe, date);
                 orderInfoList.add(orderInfo);
 
-                //System.out.println("OrderInfoID: " + orderInfoID + " Quantity: " + quantity + " Sko: " + shoe.getShoeName());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,6 +172,7 @@ public class Repository {
                 System.out.println("Skonamn: " + oi.getShoe().getShoeName() + ", Kvantitet: " + oi.getQuantity());
             }
         }
+        System.out.println("--------SLUT----------");
     }
 
 
