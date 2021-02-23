@@ -65,15 +65,14 @@ public class Repository {
                 System.out.println("\n\nVälj Sko nummer:");
                 int choice = scanner.nextInt();
                 int shoeID = chooseShoe(choice).getShoeID();
-                System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
+                //System.out.println("Du har valt " + chooseShoe(choice).getShoeName());
                 System.out.println("Välj 1 om du vill beställa skon, välj 2 om du vill sätta betyg på skon, välj 3 om du vill se genomsnittsbetyget på skon och dess kommentarer");
                 switch (scanner.nextInt()) {
                     case 1:
                         System.out.println("Hur många exemplar vill du beställa?");
                         int amountOfShoes = scanner.nextInt();
                         customerID = getCustomer(username).getCustomerID();
-                        System.out.println(addShoeToOrder(customerID, shoeID, amountOfShoes));
-                        getOrderInfo(username);
+                        addShoeToOrder(customerID, shoeID, amountOfShoes);
                         break;
 
                     case 2: {
@@ -97,10 +96,9 @@ public class Repository {
                 System.out.println("Vill du lägga till en till sko?");
                 scanner.nextLine();
                 if (scanner.nextLine().equalsIgnoreCase("Nej")) {
-                    break;
-                }
-                else {
+                    getOrderInfo(username);
                     printOrderList();
+                    break;
                 }
 
 
@@ -134,7 +132,6 @@ public class Repository {
                 orderInfo = new OrderInfo(orderInfoID, orders, quantity, shoe, date);
                 orderInfoList.add(orderInfo);
 
-
                 //System.out.println("OrderInfoID: " + orderInfoID + " Quantity: " + quantity + " Sko: " + shoe.getShoeName());
             }
         } catch (Exception e) {
@@ -160,9 +157,10 @@ public class Repository {
     }
 
     public void printOrderList() {
+        System.out.println("--------Kvitto----------");
         for (OrderInfo oi : orderInfoList) {
             if (oi.getOrder().getOrderID() == orderID) {
-
+                // Här är det stället där skon ska printas ut efter kund har handlat
                 System.out.println("Skonamn: " + oi.getShoe().getShoeName() + ", Kvantitet: " + oi.getQuantity());
             }
         }
@@ -184,7 +182,6 @@ public class Repository {
             if (orderID == 0) {
                 orderID = callableStatement.getInt(2);
             }
-            System.out.println(orderID);
 
             return "Skon är tillagd";
 
