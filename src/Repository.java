@@ -36,7 +36,6 @@ public class Repository {
             while (resultSet.next()) {
                 if (resultSet.getString("first_name").equalsIgnoreCase(username) &&
                         resultSet.getString("password").equalsIgnoreCase(password)) {
-                    System.out.println("Välkommen till skoaffären " + username);
                     return true;
                 }
             }
@@ -48,6 +47,7 @@ public class Repository {
 
     // Huvudprogrammet där användaren gör val och metoder callas
     public void promptUser() {
+        System.out.println("Välkommen till skoaffären!\n\n");
         int choice = 0;
         int shoeID = 0;
         Scanner scanner = new Scanner(System.in);
@@ -60,17 +60,13 @@ public class Repository {
 
         while (true) {
             if (checkLogin(username, password)) {
-                getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
-                        + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
-                        "kr, storlek: " + s.getSizeID().getSizeNumber()));
-
-                System.out.println("\n\nVälj Sko nummer:");
-
+                printAllShoes();
                 try {
                     choice = scanner.nextInt();
                     shoeID = chooseShoe(choice).getShoeID();
                 } catch (Exception e) {
                     System.out.println("Måste vara en siffra");
+                    System.exit(0);
                 }
 
 
@@ -105,17 +101,36 @@ public class Repository {
                     System.out.println("Något gick fel");
                 }
 
-                System.out.println("Vill du lägga till en till sko?");
-                scanner.nextLine();
-                if (scanner.nextLine().equalsIgnoreCase("Nej")) {
-                    getOrderInfo(username);
-                    printOrderList();
-                    break;
-                }
+                System.out.println("Tryck 1 om du lägga till en till sko?, 2 om du vill se din beställning, 3 om du vill avsluta.");
+                try {
+                    switch (scanner.nextInt()) {
 
+                        case 1:
+                            continue;
+                        case 2: {
+                            getOrderInfo(username);
+                            printOrderList();
+                            System.exit(0);
+                        }
+                        case 3:
+                            System.exit(0);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error");
+                    System.exit(0);
+                }
 
             } else System.out.println("Uppgifterna finns inte i systemet");
         }
+    }
+
+    // Printar alla skor till menyn
+    public void printAllShoes() {
+        getAllShoes().forEach(s -> System.out.println(counter++ + ". Kategori: " + s.getCategoriesList() + ", " + s.getBrand().getBrandName()
+                + ", " + s.getShoeName() + ", Färg: " + s.getColorsList() + ", " + s.getPriceID().getPriceNumber() +
+                "kr, storlek: " + s.getSizeID().getSizeNumber()));
+
+        System.out.println("\n\nVälj Sko nummer:");
     }
 
     // Connectar till databasen
