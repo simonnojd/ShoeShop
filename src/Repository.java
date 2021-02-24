@@ -79,7 +79,6 @@ public class Repository {
                             customerID = getCustomer(username).getCustomerID();
                             addShoeToOrder(customerID, shoeID, amountOfShoes);
                             break;
-
                         case 2: {
                             System.out.println("Sätt en kommentar på skon");
                             scanner.nextLine();
@@ -90,7 +89,6 @@ public class Repository {
                             break;
 
                         }
-
                         case 3: {
                             averageRatingOnShoe(shoeID);
                             getCommentsFromReviews(chooseShoe(choice));
@@ -99,6 +97,7 @@ public class Repository {
                     }
                 } catch (Exception e) {
                     System.out.println("Något gick fel");
+                    System.exit(0);
                 }
 
                 System.out.println("Tryck 1 om du lägga till en till sko?, 2 om du vill se din beställning, 3 om du vill avsluta.");
