@@ -323,12 +323,13 @@ public class Repository {
 
         try (Connection connection = addConnection()) {
             while (true) {
-                CallableStatement statement = connection.prepareCall("CALL rate(?,?,?,?)");
+                CallableStatement statement = connection.prepareCall("CALL rate(?,?,?,?, ?)");
                 statement.setInt(1, customerID);
                 statement.setInt(2, shoeID);
                 if (grade >= 1 && grade < 5) {
                     statement.setInt(3, grade);
-                    statement.setString(4, comment);
+                    statement.setInt(4, grade);
+                    statement.setString(5, comment);
                     statement.execute();
                     break;
                 } else {
@@ -384,8 +385,9 @@ public class Repository {
 
     public void getCommentsFromReviews(Shoes shoes) {
         List<Reviews> reviews = shoes.getReviewsList();
+        System.out.println("Kommentarer:");
         for (Reviews r : reviews) {
-            System.out.println("Kommentar: " + r.getComment());
+            System.out.println(r.getComment());
         }
 
     }

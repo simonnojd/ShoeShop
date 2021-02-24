@@ -3,13 +3,6 @@ public class Reviews {
     private Customers customer;
     private Shoes shoe;
     private int numberRating;
-
-    enum rating {
-        MISSNÖJD,
-        GANSKA_NÖJD,
-        NÖJD,
-        MYCKET_NÖJD
-    }
     private String comment;
 
     public Reviews(int reviewID, Customers customer, Shoes shoe, int numberRating, String comment) {
