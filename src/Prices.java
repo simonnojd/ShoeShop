@@ -7,26 +7,8 @@ public class Prices {
         this.priceNumber = priceNumber;
     }
 
-    public int getPriceID() {
-        return priceID;
-    }
-
-    public void setPriceID(int priceID) {
-        this.priceID = priceID;
-    }
-
     public double getPriceNumber() {
         return priceNumber;
     }
 
-    public void setPriceNumber(double priceNumber) {
-        this.priceNumber = priceNumber;
-    }
-
-
-    public String toString1() {
-        return "Prices{" +
-                "priceNumber=" + priceNumber +
-                '}';
-    }
 }

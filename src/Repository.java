@@ -18,7 +18,6 @@ public class Repository {
     private List<OrderInfo> orderInfoList = new ArrayList<>();
     private int id = 0;
     int quantity = 0;
-    private List<Shoes> shoeList = new ArrayList<>();
 
     public Repository() {
         try {
@@ -125,7 +124,7 @@ public class Repository {
 
     public void getOrderInfo(String customerName) {
 
-        int orderInfoID = 0;
+        int orderInfoID;
 
         int customerID = getCustomer(customerName).getCustomerID();
         try (Connection connection = addConnection();
@@ -150,22 +149,6 @@ public class Repository {
         }
     }
 
-    public Orders getOrder(String customerName) {
-        int customerID = getCustomer(customerName).getCustomerID();
-        try (Connection connection = addConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * from orders WHERE orders.customer_id = '" + customerID + "'")) {
-
-            while (resultSet.next()) {
-                id = resultSet.getInt("orders.id");
-                orders = new Orders(id, customers);
-            }
-            return orders;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public void printOrderList() {
         System.out.println("--------Kvitto----------");

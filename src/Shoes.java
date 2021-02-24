@@ -43,41 +43,23 @@ public class Shoes {
 
     public int getShoeID() { return shoeID; }
 
-    public void setShoeID(int shoeID) {
-        this.shoeID = shoeID;
-    }
-
     public Prices getPriceID() {
         return price;
     }
 
-    public void setPriceID(Prices pricesID) {
-        this.price = pricesID;
-    }
 
     public Sizes getSizeID() {
         return size;
-    }
-
-    public void setSizeID(Sizes sizesID) {
-        this.size = sizesID;
     }
 
     public Brands getBrand() {
         return brand;
     }
 
-    public void setBrand(Brands brand) {
-        this.brand = brand;
-    }
-
     public String getShoeName() {
         return shoeName;
     }
 
-    public void setShoeName(String shoeName) {
-        this.shoeName = shoeName;
-    }
 
     @Override
     public String toString() {

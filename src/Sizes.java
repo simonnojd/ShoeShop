@@ -7,19 +7,8 @@ public class Sizes {
         this.sizeNumber = sizeNumber;
     }
 
-    public int getSizeID() {
-        return sizeID;
-    }
-
-    public void setSizeID(int sizeID) {
-        this.sizeID = sizeID;
-    }
-
     public double getSizeNumber() {
         return sizeNumber;
     }
 
-    public void setSizeNumber(double sizeNumber) {
-        this.sizeNumber = sizeNumber;
-    }
 }

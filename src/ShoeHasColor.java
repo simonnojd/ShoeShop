@@ -9,27 +9,5 @@ public class ShoeHasColor {
         this.color = color;
     }
 
-    public int getShoeHasColorID() {
-        return shoeHasColorID;
-    }
 
-    public void setShoeHasColorID(int shoeHasColorID) {
-        this.shoeHasColorID = shoeHasColorID;
-    }
-
-    public Shoes getShoe() {
-        return shoe;
-    }
-
-    public void setShoe(Shoes shoe) {
-        this.shoe = shoe;
-    }
-
-    public Colors getColor() {
-        return color;
-    }
-
-    public void setColor(Colors color) {
-        this.color = color;
-    }
 }

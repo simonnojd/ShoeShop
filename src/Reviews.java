@@ -13,43 +13,8 @@ public class Reviews {
         this.comment = comment;
     }
 
-    public int getReviewID() {
-        return reviewID;
-    }
-
-    public void setReviewID(int reviewID) {
-        this.reviewID = reviewID;
-    }
-
-    public Customers getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customers customer) {
-        this.customer = customer;
-    }
-
-    public Shoes getShoe() {
-        return shoe;
-    }
-
-    public void setShoe(Shoes shoe) {
-        this.shoe = shoe;
-    }
-
-    public int getNumberRating() {
-        return numberRating;
-    }
-
-    public void setNumberRating(int numberRating) {
-        this.numberRating = numberRating;
-    }
-
     public String getComment() {
         return comment;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 }
