@@ -28,6 +28,7 @@ public class Repository {
         }
     }
 
+    //Kollar att man har loggat in med rätt användarnman och lösenord
     public boolean checkLogin(String username, String password) {
         try (Connection connection = addConnection();
              Statement statement = connection.createStatement();
@@ -45,6 +46,7 @@ public class Repository {
         return false;
     }
 
+    // Huvudprogrammet där användaren gör val och metoder callas
     public void promptUser() {
         int choice = 0;
         int shoeID = 0;
@@ -67,7 +69,7 @@ public class Repository {
                 try {
                     choice = scanner.nextInt();
                     shoeID = chooseShoe(choice).getShoeID();
-                } catch (Exception e){
+                } catch (Exception e) {
                     System.out.println("Måste vara en siffra");
                 }
 
@@ -99,7 +101,7 @@ public class Repository {
                             break;
                         }
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     System.out.println("Något gick fel");
                 }
 
@@ -116,12 +118,14 @@ public class Repository {
         }
     }
 
+    // Connectar till databasen
     public Connection addConnection() throws SQLException {
         return DriverManager.getConnection(properties.getProperty("connectionString"),
                 properties.getProperty("name"),
                 properties.getProperty("password"));
     }
 
+    // Lägger in alla orders av en specifik kund i en lista
     public void getOrderInfo(String customerName) {
 
         int orderInfoID;
@@ -141,20 +145,17 @@ public class Repository {
                 orders = new Orders(id, customers);
                 orderInfo = new OrderInfo(orderInfoID, orders, quantity, shoe, date);
                 orderInfoList.add(orderInfo);
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
+    // Printar ut en användares senaste order
     public void printOrderList() {
         System.out.println("--------Kvitto----------");
         for (OrderInfo oi : orderInfoList) {
             if (oi.getOrder().getOrderID() == orderID) {
-                // Här är det stället där skon ska printas ut efter kund har handlat
                 System.out.println("Skonamn: " + oi.getShoe().getShoeName() + ", Kvantitet: " + oi.getQuantity());
             }
         }
@@ -162,6 +163,7 @@ public class Repository {
     }
 
 
+    // Callar på SP:n i MySql som lägger till en beställning
     public String addShoeToOrder(int customerID, int shoeID, int quantity) {
 
         try (Connection connection = addConnection();
@@ -173,28 +175,17 @@ public class Repository {
             callableStatement.setInt(4, quantity);
             callableStatement.registerOutParameter(2, Types.INTEGER);
             callableStatement.execute();
-
             if (orderID == 0) {
                 orderID = callableStatement.getInt(2);
             }
-
             return "Skon är tillagd";
-
         } catch (Exception e) {
             e.printStackTrace();
-            try {
-                System.out.println("Transaction is being rolled back");
-                connection.rollback();
-            } catch (SQLException throwables) {
-                throwables.getMessage();
-            }
-
         }
-
         return "Detta gick inte så bra";
     }
 
-
+    // Returnerar en Customer
     public Customers getCustomer(String userName) {
         try (Connection connection = addConnection();
              Statement statement = connection.createStatement();
@@ -216,6 +207,7 @@ public class Repository {
         return null;
     }
 
+    // Hämtar alla skor och returnerar dom i en lista
     public List<Shoes> getAllShoes() {
         List<Shoes> shoeList = new ArrayList<>();
         counter = 1;
@@ -232,8 +224,6 @@ public class Repository {
 
                 shoeList.add(new Shoes(shoeID, price, size, brand, shoeName));
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -243,6 +233,7 @@ public class Repository {
         return shoeList;
     }
 
+    // Returnerar skon baserat på användarens val
     public Shoes chooseShoe(int choice) {
         List<Shoes> shoeList = getAllShoes();
         for (int i = 1; i < shoeList.size() + 1; i++) {
@@ -253,16 +244,18 @@ public class Repository {
         return null;
     }
 
+    // Returnerar sko baserat på id
     public Shoes findShoeByID(int shoeID) {
         List<Shoes> shoeList = getAllShoes();
         for (Shoes s : shoeList) {
-            if (s.getShoeID() == shoeID){
+            if (s.getShoeID() == shoeID) {
                 return s;
             }
         }
         return null;
     }
 
+    // Lägger till en lista av färger för varje sko
     public void giveShoesColor(List<Shoes> shoeList) {
         try (Connection connection = addConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM shoe_has_color JOIN colors ON colors.id = shoe_has_color.color_id");
@@ -282,6 +275,7 @@ public class Repository {
         }
     }
 
+    // Lägger till en lista av kategorier för varje sko
     public void giveShoesCategory(List<Shoes> shoeList) {
         try (Connection connection = addConnection();
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM shoes_in_categories JOIN categories ON categories.id = shoes_in_categories.category_id");
@@ -302,6 +296,7 @@ public class Repository {
     }
 
 
+    // Callar på SP:n i MySql som betygsätter en sko
     public void rateShoe(int customerID, int shoeID, int grade, String comment) {
 
         try (Connection connection = addConnection()) {
@@ -326,6 +321,7 @@ public class Repository {
         }
     }
 
+    // Få ut genomsnittsbetyget för en sko
     public void averageRatingOnShoe(int shoeID) {
 
         try (Connection connection = addConnection()) {
@@ -341,6 +337,7 @@ public class Repository {
         }
     }
 
+    // Lägger till en lista av reviews för varje sko
     public void getReviews(List<Shoes> shoeList) {
 
         try (Connection connection = addConnection();
@@ -366,6 +363,7 @@ public class Repository {
         }
     }
 
+    // Plockar ut kommentarerna från reviewsen för en viss sko
     public void getCommentsFromReviews(Shoes shoes) {
         List<Reviews> reviews = shoes.getReviewsList();
         System.out.println("Kommentarer:");
